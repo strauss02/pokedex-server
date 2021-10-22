@@ -10,6 +10,7 @@ app.listen(port, () => console.log('listening on', port))
 
 //route the app
 app.get('/', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*')
   res.send('we got a get request ')
 })
 
