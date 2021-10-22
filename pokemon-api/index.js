@@ -13,16 +13,16 @@ app.get('/', (req, res) => {
   res.send('we got a get request ')
 })
 
-//send back pokemon name according to id or name requested
-// app.get('/:id', pokemonRouter)
+// send back pokemon name according to id or name requested
+app.use('/pokemon', pokemonRouter)
 
 //send back pokemon name according to id or name requested
-app.get('/:id', (req, res) => {
-  console.log('we got id param')
-  console.log(req.params.id)
-  P.getPokemonByName(req.params.id)
-    .then((pokeres) => {
-      res.send(pokeres.name)
-    })
-    .catch((err) => res.send(err.message))
-})
+// app.get('/:id', (req, res) => {
+//   console.log('we got id param')
+//   console.log(req.params.id)
+//   P.getPokemonByName(req.params.id)
+//     .then((pokeres) => {
+//       res.send(pokeres.name)
+//     })
+//     .catch((err) => res.send(err.message))
+// })
