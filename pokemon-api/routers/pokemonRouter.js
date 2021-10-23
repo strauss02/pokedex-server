@@ -120,23 +120,22 @@ router.delete('/release/:id', (req, res, next) => {
 })
 
 //catch pokemon!
-router.put('/catch/:id', async function (req, res, next) {
+router.put('/catch/:id', function (req, res, next) {
   console.log('we got pokemon put request')
   console.log(req.params.id)
   const userName = req.header('username')
   const pokemonID = req.params.id
   try {
-    handleCatch(userName, pokemonID)
+    handleCatch(userName, pokemonID, next, res)
   } catch (error) {
-    next({ status: 403, message: { error: 'you already caught one!' } })
+    next({ message: { error: 'you already caught one!' } })
     return
   }
-  res.send('yoy')
-  // createPokemonJson(currentPokemon, userName)
+  // res.send('pokemon caught')
 })
 
 //check user exists, if not, create it's folder
-function handleCatch(user, id) {
+function handleCatch(user, id, next, putRes) {
   console.log('handlecatch id', id)
   fs.readdir('./users', (err, res) => {
     if (err) {
@@ -147,16 +146,12 @@ function handleCatch(user, id) {
       console.log('no user exists. creating new user folder')
       fs.mkdirSync(`./users/${user}`)
     }
-    try {
-      createPokemonJson(id, user)
-    } catch (error) {
-      throw Error('create pokemon json failed')
-    }
+    createPokemonJson(id, user, next, putRes)
   })
 }
 
 //creates a pokemon.json file in the user's folder
-function createPokemonJson(id, user) {
+async function createPokemonJson(id, user, next, putRes) {
   fs.readdir(`./users/${user}`, async (err, res) => {
     if (err) {
       console.log(err)
@@ -164,18 +159,26 @@ function createPokemonJson(id, user) {
       console.log('id in createpokemonjson', id)
       // const pokeObject = requestPokemonObject(id)
       // console.log('pokeObject is:', pokeObject)
-      try {
-        if (res.includes(`${id}.json`)) {
-          console.log('pokemon already exists')
-          throw Error('pokemon already caught. you cant catch twice')
-        } else {
-          console.log('no pokemon found')
-          const object = await requestPokemonObject(id).then((res) => res)
-          console.log(object)
-          fs.writeFileSync(`users/${user}/${id}.json`, JSON.stringify(object))
-        }
-      } catch (error) {
-        throw 'something went wrong'
+      // try {
+      if (res.includes(`${id}.json`)) {
+        console.log('pokemon already exists')
+        console.log('we got here')
+        await next({
+          status: 403,
+          message: { error: 'you already caught one! line 181' },
+        })
+        return
+        // throw Error('pokemon already caught. you cant catch twice')
+      } else {
+        console.log('no pokemon found')
+        const object = await requestPokemonObject(id).then((res) => res)
+        console.log(object)
+        fs.writeFileSync(`users/${user}/${id}.json`, JSON.stringify(object))
+        putRes.send('pokemon caught!')
+        console.log('we got to 172')
+        // }
+        // } catch (error) {
+        // }
       }
     }
   })
