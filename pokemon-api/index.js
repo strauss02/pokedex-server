@@ -1,3 +1,4 @@
+const cors = require('cors')
 const express = require('express')
 const app = express()
 const port = 8080
@@ -7,7 +8,7 @@ const pokemonRouter = require('./routers/pokemonRouter')
 const errorHandler = require('./middleware/errorHandler')
 const Pokedex = require('pokedex-promise-v2')
 const P = new Pokedex()
-
+app.use(cors())
 // app.use(test)
 
 // function test(req, res, next) {
@@ -20,7 +21,7 @@ app.listen(port, () => console.log('listening on', port))
 
 //route the app
 app.get('/', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*')
+  // res.header('Access-Control-Allow-Origin', '*')
   res.send('we got a get request ')
 })
 

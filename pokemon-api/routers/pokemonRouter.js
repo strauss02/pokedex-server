@@ -1,10 +1,11 @@
 const { response } = require('express')
-const express = require('express')
-const router = express.Router()
 const Pokedex = require('pokedex-promise-v2')
 const P = new Pokedex()
 const fs = require('fs')
 const { resolve } = require('path')
+
+const express = require('express')
+const router = express.Router()
 
 // let currentPokemon = {
 //   id: 8,
@@ -19,6 +20,7 @@ const { resolve } = require('path')
 //   abilities: ['torrent', 'rain-dish'],
 // }
 
+//get pokemon by ID
 router.get('/get/:id', (req, res, next) => {
   console.log('we got id param')
   console.log(req.params.id)
@@ -51,6 +53,7 @@ function requestPokemonObject(id) {
 }
 // // Local host:8080/Pokemon/query?name=pikachu
 
+//get pokemon by name
 router.get('/query', (req, res, next) => {
   console.log('we got pokemon name param')
   console.log(req.query.name)
@@ -68,9 +71,23 @@ router.get('/query', (req, res, next) => {
 
 //get all caught pokemon!
 router.get('/', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*')
   const user = req.header('username')
   const arr = getAllCaughtPokemon(user)
   res.send(arr)
+})
+
+router.get('/list', (req, res) => {
+  username = req.header('username')
+  let idList = []
+  let userDir = fs.readdirSync(`./users/${username}`)
+  for (let file of userDir) {
+    let parsrFile = JSON.parse(
+      fs.readFileSync(`./users/${username}/${file}`, 'utf8')
+    )
+    idList.push(parsrFile.id)
+  }
+  res.send(idList)
 })
 
 function getAllCaughtPokemon(user) {
@@ -133,6 +150,41 @@ router.put('/catch/:id', function (req, res, next) {
   }
   // res.send('pokemon caught')
 })
+
+//catch according to amit
+// router.put('/catch/:id', (req, response, next) => {
+//   const username = req.header('username')
+//   const pokemonId = req.params.id
+//   fs.readdir('./users', async (err, res) => {
+//     if (err) {
+//       console.log(err)
+//       return
+//     }
+//     if (!res.includes(username)) {
+//       fs.mkdirSync(`./users/${username}`)
+//       fs.writeFileSync(
+//         `./users/${username}/${pokemonId}.json`,
+//         JSON.stringify(getPokemonObj(await getPokemonData(pokemonId)))
+//       )
+//       response.send('Catch!')
+//     }
+//     if (fs.readdirSync(`./users/${username}`).includes(`${pokemonId}.json`)) {
+//       next({
+//         status: 403,
+//         message: {
+//           error:
+//             'releasing an uncaught pokemon, or catching an already caught pokemon',
+//         },
+//       })
+//     } else {
+//       fs.writeFileSync(
+//         `./users/${username}/${pokemonId}.json`,
+//         JSON.stringify(getPokemonObj(await getPokemonData(pokemonId)))
+//       )
+//       response.send('Catch!')
+//     }
+//   })
+// })
 
 //check user exists, if not, create it's folder
 function handleCatch(user, id, next, putRes) {
