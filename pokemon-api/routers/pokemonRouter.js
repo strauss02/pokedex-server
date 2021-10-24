@@ -136,55 +136,61 @@ router.delete('/release/:id', (req, res, next) => {
   }
 })
 
-//catch pokemon!
-router.put('/catch/:id', function (req, res, next) {
-  console.log('we got pokemon put request')
-  console.log(req.params.id)
-  const userName = req.header('username')
-  const pokemonID = req.params.id
-  try {
-    handleCatch(userName, pokemonID, next, res)
-  } catch (error) {
-    next({ message: { error: 'you already caught one!' } })
-    return
-  }
-  // res.send('pokemon caught')
+//catch pokemon! - grayed cus amit's works better
+// router.put('/catch/:id', function (req, res, next) {
+//   console.log('we got pokemon put request')
+//   console.log(req.params.id)
+//   const userName = req.header('username')
+//   const pokemonID = req.params.id
+//   try {
+//     handleCatch(userName, pokemonID, next, res)
+//   } catch (error) {
+//     next({ message: { error: 'you already caught one!' } })
+//     return
+//   }
+//   // res.send('pokemon caught')
+// })
+
+// catch according to amit
+router.put('/catch/:id', (req, response, next) => {
+  const username = req.header('username')
+  const pokemonId = req.params.id
+  fs.readdir('./users', async (err, res) => {
+    if (err) {
+      console.log(err)
+      return
+    }
+    if (!res.includes(username)) {
+      fs.mkdirSync(`./users/${username}`)
+      fs.writeFileSync(
+        `./users/${username}/${pokemonId}.json`,
+        JSON.stringify(getPokemonObj(await getPokemonData(pokemonId)))
+      )
+      response.send('Catch!')
+    }
+    if (fs.readdirSync(`./users/${username}`).includes(`${pokemonId}.json`)) {
+      next({
+        status: 403,
+        message: {
+          error:
+            'releasing an uncaught pokemon, or catching an already caught pokemon',
+        },
+      })
+    } else {
+      fs.writeFileSync(
+        `./users/${username}/${pokemonId}.json`,
+        JSON.stringify(getPokemonObj(await getPokemonData(pokemonId)))
+      )
+      response.send('Catch!')
+    }
+  })
 })
 
-//catch according to amit
-// router.put('/catch/:id', (req, response, next) => {
-//   const username = req.header('username')
-//   const pokemonId = req.params.id
-//   fs.readdir('./users', async (err, res) => {
-//     if (err) {
-//       console.log(err)
-//       return
-//     }
-//     if (!res.includes(username)) {
-//       fs.mkdirSync(`./users/${username}`)
-//       fs.writeFileSync(
-//         `./users/${username}/${pokemonId}.json`,
-//         JSON.stringify(getPokemonObj(await getPokemonData(pokemonId)))
-//       )
-//       response.send('Catch!')
-//     }
-//     if (fs.readdirSync(`./users/${username}`).includes(`${pokemonId}.json`)) {
-//       next({
-//         status: 403,
-//         message: {
-//           error:
-//             'releasing an uncaught pokemon, or catching an already caught pokemon',
-//         },
-//       })
-//     } else {
-//       fs.writeFileSync(
-//         `./users/${username}/${pokemonId}.json`,
-//         JSON.stringify(getPokemonObj(await getPokemonData(pokemonId)))
-//       )
-//       response.send('Catch!')
-//     }
-//   })
-// })
+//from amit
+async function getPokemonData(id) {
+  let data = await P.getPokemonByName(id)
+  return data
+}
 
 //check user exists, if not, create it's folder
 function handleCatch(user, id, next, putRes) {

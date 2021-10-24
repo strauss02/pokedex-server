@@ -7,8 +7,8 @@ function errorHandlerPokemon(err, req, res, next) {
   }
   //   console.log(err)
   //   console.log('res is:', res)
-  //   res.status(500)
-  //   res.send(err.message)
+  res.status(err.status)
+  res.send(err.message)
 }
 
 module.exports = errorHandlerPokemon
